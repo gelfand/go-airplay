@@ -5,11 +5,9 @@
 // http://www.ietf.org/rfc/rfc2326.txt - RTSP
 // http://www.ietf.org/rfc/rfc4566.txt - SDP
 
-
 //
 // Need to look into https://github.com/stephen/nodetunes
 //
-
 
 //
 
@@ -20,7 +18,6 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/nu7hatch/gouuid"
 	"io"
 	"net"
 	"net/http"
@@ -28,6 +25,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -61,8 +60,9 @@ func Dial(ip net.IP, port uint16, password string) (a Airplay, err error) {
 	a.sessionID = uuid.String()
 	a.cseq = 0
 
+	addr := ip.String() + ":" + strconv.Itoa(int(port))
 	// Immediately make a connection and ask for OPTIONS, just to make sure we can connect
-	a.conn, err = textproto.Dial("tcp", ip.String()+":"+strconv.Itoa(int(port)))
+	a.conn, err = textproto.Dial("tcp", addr)
 	if err != nil {
 		return a, err
 	}
@@ -210,7 +210,7 @@ func (a *Airplay) makeRTSPRequest(method string, path string, body io.Reader) (r
 		return resp, err
 	}
 
-	//fmt.Println(line)
+	// fmt.Println(line)
 	f := strings.SplitN(line, " ", 3) // Proto, Code, Status
 	reasonPhrase := ""
 	if len(f) > 2 {
@@ -231,7 +231,7 @@ func (a *Airplay) makeRTSPRequest(method string, path string, body io.Reader) (r
 
 	resp.Header = http.Header(headers)
 
-	//fmt.Println(headers)
+	// fmt.Println(headers)
 
 	// Do auth
 	if f[1] == "401" {
@@ -258,7 +258,6 @@ func (a *Airplay) makeRTSPRequest(method string, path string, body io.Reader) (r
 				value := strings.Trim(parts[1], "\"")
 				if parts[0] == "nonce" {
 					a.nonce = value
-
 				} else if parts[0] == "realm" {
 					a.realm = value
 				}
@@ -345,7 +344,7 @@ func (a *Airplay) makeHTTPRequest(method string, path string) (resp http.Respons
 
 	resp.Header = http.Header(headers)
 
-	//fmt.Println(headers)
+	// fmt.Println(headers)
 
 	// Do auth
 	if f[1] == "401" {
@@ -372,7 +371,6 @@ func (a *Airplay) makeHTTPRequest(method string, path string) (resp http.Respons
 				value := strings.Trim(parts[1], "\"")
 				if parts[0] == "nonce" {
 					a.nonce = value
-
 				} else if parts[0] == "realm" {
 					a.realm = value
 				}
@@ -474,7 +472,6 @@ func (a *Airplay) makeReverseRequest() (err error) {
 				value := strings.Trim(parts[1], "\"")
 				if parts[0] == "nonce" {
 					a.nonce = value
-
 				} else if parts[0] == "realm" {
 					a.realm = value
 				}

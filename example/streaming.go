@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/grantmd/go-airplay"
+
+	"github.com/gelfand/go-airplay"
 )
 
-var (
-	deviceList []airplay.AirplayDevice
-)
+var deviceList []airplay.AirplayDevice
 
 func main() {
 	// Discover some devices
@@ -37,7 +36,7 @@ func main() {
 			// We connected, now stream something
 			fmt.Println("Connected")
 
-			//device.GetServerInfo()
+			// device.GetServerInfo()
 
 			break
 		}

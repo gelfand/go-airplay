@@ -4,25 +4,23 @@ import (
 	"fmt"
 )
 
-var (
-	DAAPGroups = map[string]bool{
-		"cmst": true,
-		"mlog": true,
-		"agal": true,
-		"mlcl": true,
-		"mshl": true,
-		"mlit": true,
-		"abro": true,
-		"abar": true,
-		"apso": true,
-		"caci": true,
-		"avdb": true,
-		"cmgt": true,
-		"aply": true,
-		"adbs": true,
-		"cmpa": true,
-	}
-)
+var DAAPGroups = map[string]bool{
+	"cmst": true,
+	"mlog": true,
+	"agal": true,
+	"mlcl": true,
+	"mshl": true,
+	"mlit": true,
+	"abro": true,
+	"abar": true,
+	"apso": true,
+	"caci": true,
+	"avdb": true,
+	"cmgt": true,
+	"aply": true,
+	"adbs": true,
+	"cmpa": true,
+}
 
 func DAAPParse(buffer []byte) (tags map[string]interface{}) {
 	tags = make(map[string]interface{}, 100) // TODO: Make this a better capacity ;-)

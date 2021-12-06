@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/grantmd/go-airplay"
 	"net"
+
+	"github.com/gelfand/go-airplay"
 )
 
 func main() {

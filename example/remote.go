@@ -3,13 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/grantmd/go-airplay"
 	"os"
+
+	"github.com/gelfand/go-airplay"
 )
 
-var (
-	deviceList []airplay.AirplayDevice
-)
+var deviceList []airplay.AirplayDevice
 
 func main() {
 	// Start the server
@@ -24,7 +23,7 @@ func main() {
 	deviceChan := make(chan []airplay.AirplayDevice)
 	go airplay.Discover(deviceChan)
 
-	//var device airplay.Remote
+	// var device airplay.Remote
 	for {
 		deviceList = <-deviceChan
 
@@ -42,7 +41,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			//fmt.Println()
+			// fmt.Println()
 
 			_, err = airplay.Pair(deviceList[i], string(line))
 			if err != nil {

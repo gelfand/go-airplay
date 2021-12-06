@@ -19,9 +19,7 @@ import (
 	"strings"
 )
 
-var (
-	deviceList []AirplayDevice
-)
+var deviceList []AirplayDevice
 
 type AirplayDevice struct {
 	Name     string
@@ -36,7 +34,7 @@ type AirplayDevice struct {
 // Main functions for starting up and listening for records start here
 //
 
-func Discover(devices chan []AirplayDevice) {
+func Discover(discoveryCh chan []AirplayDevice, errCh chan error) {
 	// Listen on the multicast address and port
 	socket, err := net.ListenMulticastUDP("udp", nil, &net.UDPAddr{
 		IP:   net.IPv4(224, 0, 0, 251),
@@ -50,7 +48,7 @@ func Discover(devices chan []AirplayDevice) {
 
 	// Put the listener in its own goroutine
 	msgs := make(chan DNSMessage)
-	go listen(socket, msgs)
+	go listen(socket, msgs, errCh)
 
 	// Bootstrap us by sending a query for any airplay-related entries
 	var msg DNSMessage
@@ -87,7 +85,7 @@ func Discover(devices chan []AirplayDevice) {
 	for {
 		msg = <-msgs
 
-		//fmt.Println(msg.String())
+		// fmt.Println(msg.String())
 
 		// Look for new devices
 		for i := range msg.Answers {
@@ -141,12 +139,12 @@ func Discover(devices chan []AirplayDevice) {
 		// TODO: Do this on a timer so we're not asking for things too often
 
 		// Push it down the channel
-		devices <- deviceList
+		discoveryCh <- deviceList
 	}
 }
 
 // Listen on a socket for multicast records and parse them
-func listen(socket *net.UDPConn, msgs chan DNSMessage) {
+func listen(socket *net.UDPConn, msgs chan DNSMessage, errCh chan error) {
 	var msg DNSMessage
 	// Loop forever waiting for messages
 	for {
@@ -161,7 +159,8 @@ func listen(socket *net.UDPConn, msgs chan DNSMessage) {
 		// Parse the buffer (up to "read" bytes) into a message object
 		err = msg.Parse(buffer[:read])
 		if err != nil {
-			panic(err)
+			errCh <- fmt.Errorf("Unable to parse msg: %w", err)
+			continue
 		}
 
 		// Does this have answers we are interested in? If so, return the whole message since the rest of it (Extras in particular)
@@ -186,13 +185,13 @@ func listen(socket *net.UDPConn, msgs chan DNSMessage) {
 }
 
 func (a *AirplayDevice) updateFromDNS(msg *DNSMessage) {
-	//fmt.Println(msg)
+	// fmt.Println(msg)
 	loop := true
 	for loop {
 		loop = false
 		for i := range msg.Answers {
 			rr := &msg.Answers[i]
-			//fmt.Println(rr.String())
+			// fmt.Println(rr.String())
 
 			// Figure out the name of this thing
 			nameParts := strings.Split(rr.Name, ".")
@@ -210,7 +209,8 @@ func (a *AirplayDevice) updateFromDNS(msg *DNSMessage) {
 		// See if the rest of the information for this device is in Extras
 		for i := range msg.Extras {
 			rr := &msg.Extras[i]
-			//fmt.Println(rr.String())
+			// fmt.Println(rr.String())
+			// fmt.Println(rr.String())
 
 			// Figure out the name of this thing
 			nameParts := strings.Split(rr.Name, ".")
